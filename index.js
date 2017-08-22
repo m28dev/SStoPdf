@@ -4,9 +4,9 @@ const client = require('cheerio-httpcli');
 const PDFDocument = require('pdfkit');
 const sizeOf = require('image-size');
 
-// TODO usage()
+// usage()
 if (process.argv.length < 3) {
-    console.error('Usage : node index.js [url]');
+    console.error('Usage : node index.js [SlideShare URL]');
     process.exit(1);
 }
 
@@ -18,9 +18,9 @@ const tmpPath = fs.mkdtempSync(tmpDir);
 client.download.on('ready', stream => {
     const jpgName = path.basename(stream.url.pathname);
     stream.pipe(fs.createWriteStream(`${tmpPath}/${jpgName}`));
-}).on('error', function (err) {
+}).on('error', err => {
     console.error(err.url + 'をダウンロードできませんでした: ' + err.message);
-}).on('end', function () {
+}).on('end', () => {
     // ダウンロード待ちがなくなったらPDF作成開始
     createSlidePdf();
     console.log(`${tmpPath}/output.pdf`);
@@ -32,6 +32,10 @@ client.download.on('ready', stream => {
 // スクレイピング開始
 client.fetch(process.argv[2]).then(result => {
     result.$('div.slide_container > section.slide > img').download('data-full');
+}).catch(err => {
+    console.log(err);
+}).finally(() => {
+    console.log('done');
 });
 
 /**
